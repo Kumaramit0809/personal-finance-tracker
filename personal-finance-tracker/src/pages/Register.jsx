@@ -4,23 +4,25 @@ import Card from "../components/common/Card";
 import Input from "../components/common/Input";
 import Button from "../components/common/Button";
 import { useAuth } from "../context/AuthContext";
+import { getUsers } from "../utils/storage";
+
+const capitalize = (val) => val.charAt(0).toUpperCase() + val.slice(1);
 
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setError("");
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "name" ? capitalize(value) : value,
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -41,11 +43,7 @@ const Register = () => {
       <Card className="w-full max-w-md">
         <h1 className="mb-2 text-2xl font-bold text-slate-800">Create Account</h1>
         <p className="mb-6 text-sm text-slate-500">Start tracking your finances smartly.</p>
-
-        {error && (
-          <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</div>
-        )}
-
+        {error && <div className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-600">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input label="Full Name" name="name" value={form.name} onChange={handleChange} required />
           <Input label="Email" type="email" name="email" value={form.email} onChange={handleChange} required />
@@ -54,12 +52,9 @@ const Register = () => {
             {loading ? "Creating Account..." : "Register"}
           </Button>
         </form>
-
         <p className="mt-4 text-sm text-slate-600">
           Already have an account?{" "}
-          <Link to="/login" className="font-medium text-blue-600 hover:underline">
-            Login
-          </Link>
+          <Link to="/login" className="font-medium text-blue-600 hover:underline">Login</Link>
         </p>
       </Card>
     </div>
