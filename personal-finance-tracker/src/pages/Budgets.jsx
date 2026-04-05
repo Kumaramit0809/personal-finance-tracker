@@ -1,25 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import BudgetForm from "../components/forms/BudgetForm";
 import BudgetProgress from "../components/dashboard/BudgetProgress";
-import { getBudgets, getExpenses, setBudgets } from "../utils/storage";
+import { getBudgets, addBudget, getExpenses } from "../utils/api";
+import { useAuth } from "../context/AuthContext";
 
 const Budgets = () => {
-  const [budgets, setBudgetsState] = useState(getBudgets());
-  const expenses = getExpenses();
+  const { token } = useAuth();
+  const [budgets, setBudgets] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddBudget = (budget) => {
-    const existingIndex = budgets.findIndex(
-      (b) => b.category === budget.category && b.month === budget.month
-    );
-    let updated = [...budgets];
-    if (existingIndex !== -1) {
-      updated[existingIndex] = { ...updated[existingIndex], amount: budget.amount };
-    } else {
-      updated.push(budget);
-    }
-    setBudgets(updated);
-    setBudgetsState(updated);
+  const fetchAll = async () => {
+    setLoading(true);
+    const [b, e] = await Promise.all([getBudgets(token), getExpenses(token)]);
+    if (b.success) setBudgets(b.budgets);
+    if (e.success) setExpenses(e.expenses);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchAll(); }, []);
+
+  const handleAddBudget = async (budget) => {
+    const res = await addBudget(token, budget.category, budget.amount);
+    if (res.success) fetchAll();
   };
 
   return (
@@ -28,7 +32,11 @@ const Budgets = () => {
         <BudgetForm onAdd={handleAddBudget} />
         <div>
           <h2 className="mb-4 text-xl font-bold text-slate-800">Monthly Budget Progress</h2>
-          <BudgetProgress budgets={budgets} expenses={expenses} />
+          {loading ? (
+            <div className="py-10 text-center text-sm text-slate-400">Loading...</div>
+          ) : (
+            <BudgetProgress budgets={budgets} expenses={expenses} />
+          )}
         </div>
       </div>
     </AppLayout>

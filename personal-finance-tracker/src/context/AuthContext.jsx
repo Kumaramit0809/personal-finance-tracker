@@ -1,78 +1,42 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import {
-  clearCurrentUser,
-  getCurrentUser,
-  getUsers,
-  setCurrentUser,
-  setUsers,
-} from "../utils/storage";
+import { createContext, useContext, useState, useEffect } from "react";
+import { getProfile } from "../utils/api";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const current = getCurrentUser();
-    setUser(current);
-    setLoading(false);
-  }, []);
-
-  const register = ({ name, email, password }) => {
-    const users = getUsers();
-    const exists = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-
-    if (exists) {
-      throw new Error("User already exists with this email.");
-    }
-
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password, // frontend demo only
-      verified: true, // simulated email verification
+    const fetchUser = async () => {
+      setLoading(true);
+      if (token) {
+        const res = await getProfile(token);
+        if (res.success) {
+          setUser(res.user);
+        } else {
+          localStorage.removeItem("token");
+          setToken(null);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
     };
 
-    const updated = [...users, newUser];
-    setUsers(updated);
-    return true;
-  };
-
-  const login = ({ email, password }) => {
-    const users = getUsers();
-    const found = users.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() &&
-        u.password === password
-    );
-
-    if (!found) {
-      throw new Error("Invalid email or password.");
-    }
-
-    if (!found.verified) {
-      throw new Error("Email is not verified.");
-    }
-
-    const safeUser = {
-      id: found.id,
-      name: found.name,
-      email: found.email,
-    };
-
-    setCurrentUser(safeUser);
-    setUser(safeUser);
-  };
+    fetchUser();
+  }, [token]);
 
   const logout = () => {
-    clearCurrentUser();
     setUser(null);
+    setToken(null);
+    localStorage.removeItem("token");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, register, login, logout }}>
+    <AuthContext.Provider value={{ user, setUser, token, setToken, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
