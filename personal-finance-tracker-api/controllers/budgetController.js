@@ -1,10 +1,9 @@
 const db = require('../config/db');
 const { sendSuccess, sendError } = require('../utils/response');
 
-// GET /api/budgets
-// Returns budgets for the current month, with spent amount calculated from expenses
+
 const getBudgets = async (req, res) => {
-  const currentMonth = new Date().toISOString().slice(0, 7); // e.g. "2026-04"
+  const currentMonth = new Date().toISOString().slice(0, 7); 
 
   try {
     const [rows] = await db.query(
@@ -31,9 +30,7 @@ const getBudgets = async (req, res) => {
   }
 };
 
-// POST /api/budgets
-// Frontend sends: { category, limit }
-// Uses current month automatically
+
 const addBudget = async (req, res) => {
   const { category, limit } = req.body;
 
