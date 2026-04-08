@@ -35,31 +35,6 @@ A full-stack web application to manage your personal finances — track expenses
  
 ---
  
-## Project Structure
- 
-```
-personal-finance-tracker-main/
-├── personal-finance-tracker-api/     # Backend
-│   ├── config/db.js
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── utils/
-│   ├── sql/schema.sql
-│   └── server.js
-│
-└── personal-finance-tracker/         # Frontend
-    ├── src/
-    │   ├── components/
-    │   ├── context/
-    │   ├── pages/
-    │   └── App.jsx
-    └── index.html
-```
- 
----
- 
 ## Getting Started
  
 ### Prerequisites
